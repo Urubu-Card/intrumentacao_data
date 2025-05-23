@@ -15,8 +15,6 @@ def gerar_hash(senha):
 
 
 
-DATABASE_URL = "mysql://root:RjOikKmFVflmdJNzRUVAdZvOMmGgYmqU@yamanote.proxy.rlwy.net:41393/railway"
-
 @st.cache_resource
 def pega_db():
     DATABASE_URL = os.getenv("DATABASE_URL")
