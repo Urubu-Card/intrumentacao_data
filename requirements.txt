@@ -1,6 +1,6 @@
 streamlit
 sqlalchemy
 pandas
-haslib
 bcrypt
 datetime
+numpy
