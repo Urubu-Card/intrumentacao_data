@@ -4,3 +4,4 @@ pandas
 bcrypt
 datetime
 numpy
+pymysql
