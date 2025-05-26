@@ -10,7 +10,7 @@ import adicionarUsuariosStreamLit as adicionar
 
 if "logado" not in st.session_state or not st.session_state["logado"]:
     st.warning("Você precisa fazer login primeiro.")
-    st.page_link("https://instrumentacao-entrar.streamlit.app", label="Voltar ao login", icon="⚠")
+    st.page_link("https://entrar.streamlit.app", label="Voltar ao login", icon="⚠")
     st.stop()
 
 
