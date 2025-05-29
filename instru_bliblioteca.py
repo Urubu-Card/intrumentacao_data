@@ -1,4 +1,4 @@
-dimport streamlit as st
+import streamlit as st
 import re
 import time
 from sqlalchemy import create_engine
