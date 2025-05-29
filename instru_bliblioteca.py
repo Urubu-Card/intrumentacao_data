@@ -13,11 +13,12 @@ import os
 def gerar_hash(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 
 @st.cache_resource
 def pega_db():
-    DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
         st.error("Erro não conectado")
         st.stop()
@@ -119,7 +120,7 @@ def login1():
             st.error("Erro : O e-mail digitado não é válido!")
         else:
             verificar_no_db(email, senha)
-    return email
+    return email    
 
 def contar_usuarios_online():
     engine = conCursor()
@@ -130,3 +131,5 @@ def contar_usuarios_online():
     cursor.close()
     conn.close()
     return resultado[0] if resultado else 0
+
+

@@ -6,13 +6,13 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 import os 
 
-
+DATABASE_URL = "mysql+pymysql://root:RjOikKmFVflmdJNzRUVAdZvOMmGgYmqU@yamanote.proxy.rlwy.net:41393/railway"
 DATABASE_URL = os.getenv("DATABASE_URL")
 
+    
 
 @st.cache_resource
 def engine_pega():
-    DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
         st.error("Erro não conectado")
         st.stop()
@@ -95,7 +95,7 @@ def stdeletar():
 def stlistar():
     engine = conCursor()
 
-    st.subheader("Lista de Usuários:")
+    st.subheader("Lista de Usuários :")
     lista = "SELECT * FROM usuarios"
     listagem = pd.read_sql(lista, engine)
 

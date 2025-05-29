@@ -15,12 +15,13 @@ bl.css()
 #Titulo da PAgina
 bl.titulo()
 
-
 #Login
 email = bl.login1()
 
+
 #Valida o Email
 bl.validar_email(email)
+
 
 
 st.markdown(
