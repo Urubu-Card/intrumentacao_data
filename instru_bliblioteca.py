@@ -101,7 +101,7 @@ def verificar_no_db(email, senha):
                 st.session_state["admin"] = admin
                 st.session_state["nome"] = nome
                 st.session_state["email"] = email
-                st.page_link("http://www.google.com")
+                st.switch_page("pages/main.py")
         else:
             st.error("Senha incorreta.")
     else:
