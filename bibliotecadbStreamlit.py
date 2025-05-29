@@ -6,7 +6,7 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 import os 
 
-DATABASE_URL = "mysql+pymysql://root:RjOikKmFVflmdJNzRUVAdZvOMmGgYmqU@yamanote.proxy.rlwy.net:41393/railway"
+
 DATABASE_URL = os.getenv("DATABASE_URL")
 
     
