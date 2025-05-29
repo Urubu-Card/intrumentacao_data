@@ -1,4 +1,4 @@
-import streamlit as st
+dimport streamlit as st
 import re
 import time
 from sqlalchemy import create_engine
@@ -101,7 +101,7 @@ def verificar_no_db(email, senha):
                 st.session_state["admin"] = admin
                 st.session_state["nome"] = nome
                 st.session_state["email"] = email
-                st.switch_page("pages/main.py")
+                st.page_link("http://www.google.com")
         else:
             st.error("Senha incorreta.")
     else:
