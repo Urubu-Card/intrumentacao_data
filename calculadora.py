@@ -1,19 +1,18 @@
 def calculadora():
-
     import streamlit as st
     import numpy as np
     import matplotlib.pyplot as plt
     import scipy.stats as stats
     from fpdf import FPDF
     import io
+    from datetime import datetime
 
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
     tema = st.get_option('theme.base')
 
     def deixar_virgula(num):
-        return str(round(num,4)).replace('.',',')
+        return str(round(num, 4)).replace('.', ',')
 
-    # Define cores e estilos conforme o tema
     def cores_por_tema(tema):
         if tema == 'dark':
             return {
@@ -46,40 +45,39 @@ def calculadora():
 
     cores = cores_por_tema(tema)
 
-    # ------------------- INICIALIZAÇÃO DA SESSÃO -------------------
+    # ------------------- Entrada do nome do usuário -------------------
+    st.title("Calculadora Estatística Completa")
+    usuario = st.text_input("Digite seu nome (usuário):")
 
+    # Inicializa flag mostrar resultado
     if "mostrar_resultado" not in st.session_state:
         st.session_state.mostrar_resultado = False
 
-    # ------------------- CONFIGURAÇÃO DA PÁGINA -------------------
+    # ------------------- Interface inicial -------------------
+    st.subheader("1. Escolha se as informações são para População ou Amostra:")
+    esco = st.selectbox("Selecione:", ("População", "Amostra"))
 
-    st.title("Calculadora Estatística : ")
-    st.write("Insira dados para calcular média, variância, desvio padrão, incertezas e visualizar gráficos.")
-
-    # ------------------- INTERFACE INICIAL -------------------
-
-    st.subheader("1. Escolha se as informações que ira querer serão resultados como População ou como Amostra :")
-    esco = st.selectbox("Selecione entre População ou Amostra : ",("População","Amostra"))
-
-    st.subheader("2. Escolha a quantidade de valores e insira os dados")
-    qtd = st.selectbox("Selecione a quantidade de valores (2 a 50):", options=list(range(2, 51)), key="qtd")
+    st.subheader("2. Quantidade de valores (2 a 50) e insira os dados")
+    qtd = st.selectbox("Quantidade de valores:", options=list(range(2, 51)), key="qtd")
     valores = []
     cols = st.columns(9)
 
     for i in range(qtd):
         col = cols[i % 9]
         with col:
-            num = st.number_input(f"{i+1}° Valor", key=f"valor_{i}", step=0.01)
+            num = st.number_input(f"{i + 1}° Valor", key=f"valor_{i}", step=0.01)
             valores.append(num)
 
     if st.button("Confirmar e calcular"):
-        st.session_state.mostrar_resultado = True
-        st.session_state.valores = valores
+        if usuario.strip() == "":
+            st.error("Por favor, digite seu nome antes de calcular.")
+        else:
+            st.session_state.mostrar_resultado = True
+            st.session_state.valores = valores
+            st.session_state.usuario = usuario
 
-    # ------------------- RESULTADOS -------------------
-
+    # ------------------- Resultados -------------------
     if st.session_state.mostrar_resultado:
-
         dados = np.array(st.session_state.valores)
         n = len(dados)
         media = np.mean(dados)
@@ -92,40 +90,38 @@ def calculadora():
         var_amostral = np.var(dados, ddof=1)
         desvio_amostral = np.std(dados, ddof=1)
 
-        # Incerteza padrão
+        # Incertezas e intervalo (só para amostra)
         u_padrao = desvio_amostral / np.sqrt(n)
-
-        # Incerteza expandida (k=2)
         k = 2
         u_expandida = k * u_padrao
-
-        # Intervalo de confiança (95%) com t de Student
         gl = n - 1
-        t_student = stats.t.ppf(0.975, df=gl)  # 95% bilateral
+        t_student = stats.t.ppf(0.975, df=gl)
         margem_erro = t_student * u_padrao
         intervalo = (media - margem_erro, media + margem_erro)
 
         st.divider()
-        st.subheader("Resultados Estatísticos : ")
+        st.subheader("Resultados Estatísticos")
 
-        st.markdown(f"### **Média :** {deixar_virgula(media)}")
+        st.markdown(f"**Usuário:** {st.session_state.usuario}")
+        st.markdown(f"**Data/Hora:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        st.markdown(f"### Média: {deixar_virgula(media)}")
         st.divider()
-        col1, col2 = st.columns(2)
 
         if esco == "População":
             st.markdown("### Cálculos como População:")
-            st.markdown(f"### Variância:  {deixar_virgula(var_pop)}")
-            st.markdown(f"### Desvio padrão: {deixar_virgula(desvio_pop)}")
-        elif esco == "Amostra":
+            st.markdown(f"- Variância:  {deixar_virgula(var_pop)}")
+            st.markdown(f"- Desvio padrão: {deixar_virgula(desvio_pop)}")
+        else:
             st.markdown("### Cálculos como Amostra:")
-            st.markdown(f"### Variância: {deixar_virgula(var_amostral)}")
-            st.markdown(f"### Desvio padrão: {deixar_virgula(desvio_amostral)}")
-            st.markdown(f"### Incerteza padrão (u): {deixar_virgula(u_padrao)}")
-            st.markdown(f"### Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}")
-            st.markdown(f"### Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula  (intervalo[1])}]")
+            st.markdown(f"- Variância: {deixar_virgula(var_amostral)}")
+            st.markdown(f"- Desvio padrão: {deixar_virgula(desvio_amostral)}")
+            st.markdown(f"- Incerteza padrão (u): {deixar_virgula(u_padrao)}")
+            st.markdown(f"- Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}")
+            st.markdown(f"- Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]")
 
-        # ------------------- GRÁFICO 1: HISTOGRAMA + MÉDIA -------------------
+        # ------------------- Criação dos gráficos -------------------
 
+        # Gráfico 1 - Histograma + Média
         fig1, ax1 = plt.subplots(facecolor=cores['fundo_fig'])
         ax1.set_facecolor(cores['cor_fundo_ax'])
         ax1.spines['bottom'].set_color(cores['cor_borda'])
@@ -144,8 +140,7 @@ def calculadora():
         ax1.legend()
         st.pyplot(fig1)
 
-        # ------------------- GRÁFICO 2: CURVA GAUSSIANA -------------------
-
+        # Gráfico 2 - Curva Gaussiana
         x = np.linspace(min(dados), max(dados), 100)
         y = stats.norm.pdf(x, media, desvio_amostral)
 
@@ -168,8 +163,7 @@ def calculadora():
         ax2.legend()
         st.pyplot(fig2)
 
-        # ------------------- GRÁFICO 3: INTERVALO DE CONFIANÇA -------------------
-
+        # Gráfico 3 - Intervalo de Confiança
         fig3, ax3 = plt.subplots(facecolor=cores['fundo_fig'])
         ax3.set_facecolor(cores['cor_fundo_ax'])
         ax3.spines['bottom'].set_color(cores['cor_borda'])
@@ -189,8 +183,7 @@ def calculadora():
         ax3.legend()
         st.pyplot(fig3)
 
-        # ------------------- GRÁFICO 4: DISPERSÃO + REGRESSÃO LINEAR -------------------
-
+        # Gráfico 4 - Dispersão + Regressão Linear
         x_simulado = np.arange(1, n + 1)
         y_simulado = dados
         coef = np.polyfit(x_simulado, y_simulado, deg=1)
@@ -214,17 +207,26 @@ def calculadora():
         ax4.legend()
         st.pyplot(fig4)
 
-        # ------------------- GERAR RELATÓRIO PDF -------------------
+        # ------------------- GERAR RELATÓRIO PDF COMPLETO -------------------
 
         pdf = FPDF()
+        pdf.set_auto_page_break(auto=True, margin=15)
         pdf.add_page()
+
+        # Cabeçalho
         pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "Relatório Estatístico", ln=True, align="C")
-        pdf.ln(10)
+        pdf.cell(0, 10, "Relatório Estatístico Completo", ln=True, align="C")
+        pdf.ln(5)
+
+        # Data e usuário
         pdf.set_font("Arial", "", 12)
+        pdf.cell(0, 10, f"Usuário: {st.session_state.usuario}", ln=True)
+        pdf.cell(0, 10, f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", ln=True)
+        pdf.ln(5)
 
+        # Estatísticas textuais
+        pdf.set_font("Arial", "", 12)
         pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
-
         if esco == "População":
             pdf.cell(0, 10, f"Variância (População): {deixar_virgula(var_pop)}", ln=True)
             pdf.cell(0, 10, f"Desvio padrão (População): {deixar_virgula(desvio_pop)}", ln=True)
@@ -235,14 +237,39 @@ def calculadora():
             pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
             pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
 
-        # Salvar PDF em buffer
+        # Função para salvar figuras no buffer e colocar no PDF
+        def colocar_figura_no_pdf(fig, pdf, largura_cm=18):
+            buf = io.BytesIO()
+            fig.savefig(buf, format="PNG", dpi=150, bbox_inches='tight', transparent=True)
+            buf.seek(0)
+            largura_px = fig.bbox.bounds[2]
+            altura_px = fig.bbox.bounds[3]
+            # Calcular altura proporcional em cm para largura fixa (18cm)
+            altura_cm = (altura_px / largura_px) * largura_cm
+            pdf.image(buf, x=None, y=None, w=largura_cm, h=altura_cm)
+            buf.close()
+
+        pdf.ln(5)
+        pdf.set_font("Arial", "B", 14)
+        pdf.cell(0, 10, "Gráficos:", ln=True)
+        pdf.ln(3)
+
+        colocar_figura_no_pdf(fig1, pdf)
+        pdf.ln(5)
+        colocar_figura_no_pdf(fig2, pdf)
+        pdf.ln(5)
+        colocar_figura_no_pdf(fig3, pdf)
+        pdf.ln(5)
+        colocar_figura_no_pdf(fig4, pdf)
+
+        # Salvar PDF em buffer e disponibilizar download
         pdf_buffer = io.BytesIO()
         pdf.output(pdf_buffer)
         pdf_bytes = pdf_buffer.getvalue()
 
         st.download_button(
-            label="Download do Relatório PDF",
+            label="Download do Relatório Completo em PDF",
             data=pdf_bytes,
-            file_name="relatorio_estatistico.pdf",
+            file_name="relatorio_completo_estatistico.pdf",
             mime="application/pdf"
         )
