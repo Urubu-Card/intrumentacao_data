@@ -229,4 +229,20 @@ def calculadora():
             pdf.cell(0, 10, f"Variância (População): {deixar_virgula(var_pop)}", ln=True)
             pdf.cell(0, 10, f"Desvio padrão (População): {deixar_virgula(desvio_pop)}", ln=True)
         else:
-            pdf.cell(0, 10, f"Variância (Amostra): {deixar
+            pdf.cell(0, 10, f"Variância (Amostra): {deixar_virgula(var_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Desvio padrão (Amostra): {deixar_virgula(desvio_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
+            pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
+
+        # Salvar PDF em buffer
+        pdf_buffer = io.BytesIO()
+        pdf.output(pdf_buffer)
+        pdf_bytes = pdf_buffer.getvalue()
+
+        st.download_button(
+            label="Download do Relatório PDF",
+            data=pdf_bytes,
+            file_name="relatorio_estatistico.pdf",
+            mime="application/pdf"
+        )
