@@ -1,3 +1,4 @@
+def calculadora():
     import streamlit as st
     import numpy as np
     import matplotlib.pyplot as plt
@@ -7,7 +8,6 @@
     from datetime import datetime
 
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
-
     tema = st.get_option('theme.base')
 
     def deixar_virgula(num):
