@@ -246,7 +246,7 @@ def calculadora():
             altura_px = fig.bbox.bounds[3]
             # Calcular altura proporcional em cm para largura fixa (18cm)
             altura_cm = (altura_px / largura_px) * largura_cm
-            pdf.image(buf, x=None, y=None, w=10, h=10)
+            pdf.image(buf, x=None, y=None, w=500, h=500)
             buf.close()
 
         pdf.ln(5)
