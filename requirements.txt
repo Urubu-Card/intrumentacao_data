@@ -7,4 +7,4 @@ numpy
 pymysql
 matplotlib
 scipy
-fpdf
+fpdf2
