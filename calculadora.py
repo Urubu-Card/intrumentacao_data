@@ -4,6 +4,9 @@ def calculadora():
     import numpy as np
     import matplotlib.pyplot as plt
     import scipy.stats as stats
+    from fpdf import FPDF
+    import io
+    import streamlit as st
 
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
     tema = st.get_option('theme.base')
@@ -211,3 +214,15 @@ def calculadora():
         ax4.set_ylabel("Valor")
         ax4.legend()
         st.pyplot(fig4)
+
+def gerar_pdf(conteudo):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    for linha in conteudo.split('\n'):
+        pdf.cell(200, 10, txt=linha, ln=True)
+    buffer = io.BytesIO()
+    pdf.output(buffer)
+    buffer.seek(0)
+    return buffer
+
