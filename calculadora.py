@@ -4,10 +4,8 @@ def calculadora():
     import numpy as np
     import matplotlib.pyplot as plt
     import scipy.stats as stats
-    from fpdf import FPDF
-    import io
-    import streamlit as st
 
+    
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
     tema = st.get_option('theme.base')
 
@@ -215,14 +213,39 @@ def calculadora():
         ax4.legend()
         st.pyplot(fig4)
 
-def gerar_pdf(conteudo):
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font("Arial", size=12)
-    for linha in conteudo.split('\n'):
-        pdf.cell(200, 10, txt=linha, ln=True)
-    buffer = io.BytesIO()
-    pdf.output(buffer)
-    buffer.seek(0)
-    return buffer
+        from fpdf import FPDF
+        import io
+
+        pdf = FPDF()
+        pdf.add_page()
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 10, "Relatório Estatístico", ln=True, align="C")
+        pdf.ln(10)
+        pdf.set_font("Arial", "", 12)
+
+        pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
+
+        if esco == "População":
+            pdf.cell(0, 10, f"Variância (População): {deixar_virgula(var_pop)}", ln=True)
+            pdf.cell(0, 10, f"Desvio padrão (População): {deixar_virgula(desvio_pop)}", ln=True)
+        else:
+            pdf.cell(0, 10, f"Variância (Amostra): {deixar_virgula(var_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Desvio padrão (Amostra): {deixar_virgula(desvio_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
+            pdf.cell(0, 10, f"Intervalo de confiança 95%:", ln=True)
+            pdf.cell(0, 10, f"[{deixar_virgula(intervalo[0])} , {deixar_virgula(intervalo[1])}]", ln=True)
+
+        # Gerar o arquivo em memória
+        buffer = io.BytesIO()
+        pdf.output(buffer)
+        buffer.seek(0)
+
+        st.download_button(
+            label="📄 Baixar relatório em PDF",
+            data=buffer,
+            file_name="relatorio_estatistico.pdf",
+            mime="application/pdf"
+        )
+
 
