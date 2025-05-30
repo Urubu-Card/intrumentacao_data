@@ -69,13 +69,13 @@ elif st.session_state.pagina == "creditos":
     st.markdown("Desenvolvedores")
     st.markdown("""
     - Bianca de Oliveira Almeida - Programação da calculadora, desenvolvendo os cálculos e gráficos e programação da página de créditos.
-    - Eduardo -
+    - Eduardo da Silva Oliveira  - Progrmação da Pagina de Login e Cadastro, Otimização da pagina e Inegração ao banco de dados de forma Online.
     """)
 
     st.markdown("Sobre os desenvolvedores")
     st.markdown("""
     - Bianca de Oliveira Almeida - "Estudante do curso técnico em Desenvolvimento de Sistemas do SENAI Jairo Cândido, tenho foco em construção de aplicações web. Tenho experiência no desenvolvimento de interfaces responsivas utilizando HTML, CSS e JavaScript, além de conhecimentos em integração com back-end em linguagens como Python e PHP."
-    - Eduardo -
+    - Eduardo da Silva Oliveira  -"Estudante do curso técnico em Desenvolvimento de Sistemas do SENAI Jairo Cândido,focado no momento na linguagem Python e Banco de Dados com uma experiência boa. Buscando mexer com HTML, CSS e C++ ."
     """)
 
     st.markdown("Bibliotecas Utilizadas")
