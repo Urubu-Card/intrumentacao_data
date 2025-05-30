@@ -247,10 +247,16 @@ def calculadora():
                 img.close()
 
             # Download do PDF
-            pdf_output = pdf.output(dest='S').encode('latin1')
+            pdf_raw = pdf.output(dest='S')
+            if isinstance(pdf_raw, str):
+                pdf_output = pdf_raw.encode('latin1')
+            else:
+                pdf_output = pdf_raw
+            
             st.download_button(
                 label="Baixar PDF",
                 data=pdf_output,
                 file_name=f"Relatorio_Estatistico_{usuario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
                 mime="application/pdf"
             )
+
