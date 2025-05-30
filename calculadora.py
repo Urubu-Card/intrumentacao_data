@@ -75,6 +75,7 @@ def calculadora():
             st.session_state.mostrar_resultado = True
             st.session_state.valores = valores
             st.session_state.usuario = usuario
+            st.session_state.esco = esco
 
     # ------------------- Resultados -------------------
     if st.session_state.mostrar_resultado:
@@ -107,7 +108,7 @@ def calculadora():
         st.markdown(f"### Média: {deixar_virgula(media)}")
         st.divider()
 
-        if esco == "População":
+        if st.session_state.esco == "População":
             st.markdown("### Cálculos como População:")
             st.markdown(f"- Variância:  {deixar_virgula(var_pop)}")
             st.markdown(f"- Desvio padrão: {deixar_virgula(desvio_pop)}")
@@ -142,7 +143,7 @@ def calculadora():
 
         # Gráfico 2 - Curva Gaussiana
         x = np.linspace(min(dados), max(dados), 100)
-        y = stats.norm.pdf(x, media, desvio_amostral)
+        y = stats.norm.pdf(x, media, desvio_amostral if st.session_state.esco == "Amostra" else desvio_pop)
 
         fig2, ax2 = plt.subplots(facecolor=cores['fundo_fig'])
         ax2.set_facecolor(cores['cor_fundo_ax'])
@@ -201,75 +202,47 @@ def calculadora():
 
         ax4.scatter(x_simulado, y_simulado, color=cores['cor_scatter'], label='Dados')
         ax4.plot(x_simulado, y_pred, color=cores['cor_regressao'], label='Regressão Linear')
-        ax4.set_title("Regressão Linear Simulada")
+        ax4.set_title("Gráfico de Dispersão e Regressão Linear")
         ax4.set_xlabel("Índice")
         ax4.set_ylabel("Valor")
         ax4.legend()
         st.pyplot(fig4)
 
-        # ------------------- GERAR RELATÓRIO PDF COMPLETO -------------------
+        # ------------------- PDF para download -------------------
+        def criar_pdf():
+            pdf = FPDF()
+            pdf.add_page()
+            pdf.set_font("Arial", size=12)
 
-        pdf = FPDF()
-        pdf.set_auto_page_break(auto=True, margin=15)
-        pdf.add_page()
+            pdf.cell(0, 10, f"Relatório Estatístico - Usuário: {st.session_state.usuario}", ln=True)
+            pdf.cell(0, 10, f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", ln=True)
+            pdf.ln(5)
 
-        # Cabeçalho
-        pdf.set_font("Arial", "B", 16)
-        pdf.cell(0, 10, "Relatório Estatístico Completo", ln=True, align="C")
-        pdf.ln(5)
+            pdf.cell(0, 10, "Dados inseridos:", ln=True)
+            dados_str = ', '.join([deixar_virgula(d) for d in dados])
+            pdf.multi_cell(0, 10, dados_str)
+            pdf.ln(5)
 
-        # Data e usuário
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 10, f"Usuário: {st.session_state.usuario}", ln=True)
-        pdf.cell(0, 10, f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", ln=True)
-        pdf.ln(5)
+            pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
+            if st.session_state.esco == "População":
+                pdf.cell(0, 10, f"Variância: {deixar_virgula(var_pop)}", ln=True)
+                pdf.cell(0, 10, f"Desvio Padrão: {deixar_virgula(desvio_pop)}", ln=True)
+            else:
+                pdf.cell(0, 10, f"Variância Amostral: {deixar_virgula(var_amostral)}", ln=True)
+                pdf.cell(0, 10, f"Desvio Padrão Amostral: {deixar_virgula(desvio_amostral)}", ln=True)
+                pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
+                pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
+                pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
 
-        # Estatísticas textuais
-        pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
-        if esco == "População":
-            pdf.cell(0, 10, f"Variância (População): {deixar_virgula(var_pop)}", ln=True)
-            pdf.cell(0, 10, f"Desvio padrão (População): {deixar_virgula(desvio_pop)}", ln=True)
-        else:
-            pdf.cell(0, 10, f"Variância (Amostra): {deixar_virgula(var_amostral)}", ln=True)
-            pdf.cell(0, 10, f"Desvio padrão (Amostra): {deixar_virgula(desvio_amostral)}", ln=True)
-            pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
-            pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
-            pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
+            pdf.ln(10)
+            pdf.cell(0, 10, "Fim do relatório.", ln=True)
 
-        # Função para salvar figuras no buffer e colocar no PDF
-        def colocar_figura_no_pdf(fig, pdf, largura_cm=18):
-            buf = io.BytesIO()
-            fig.savefig(buf, format="PNG", dpi=150, bbox_inches='tight', transparent=True)
-            buf.seek(0)
-            largura_px = fig.bbox.bounds[2]
-            altura_px = fig.bbox.bounds[3]
-            # Calcular altura proporcional em cm para largura fixa (18cm)
-            altura_cm = (altura_px / largura_px) * largura_cm
-            pdf.image(buf, x=None, y=None, w=largura_cm, h=altura_cm)
-            buf.close()
+            return pdf.output(dest='S').encode('latin1')
 
-        pdf.ln(5)
-        pdf.set_font("Arial", "B", 14)
-        pdf.cell(0, 10, "Gráficos:", ln=True)
-        pdf.ln(3)
-
-        colocar_figura_no_pdf(fig1, pdf)
-        pdf.ln(5)
-        colocar_figura_no_pdf(fig2, pdf)
-        pdf.ln(5)
-        colocar_figura_no_pdf(fig3, pdf)
-        pdf.ln(5)
-        colocar_figura_no_pdf(fig4, pdf)
-
-        # Salvar PDF em buffer e disponibilizar download
-        pdf_buffer = io.BytesIO()
-        pdf.output(pdf_buffer)
-        pdf_bytes = pdf_buffer.getvalue()
-
+        pdf_bytes = criar_pdf()
         st.download_button(
-            label="Download do Relatório Completo em PDF",
+            label="Baixar relatório PDF",
             data=pdf_bytes,
-            file_name="relatorio_completo_estatistico.pdf",
+            file_name=f"relatorio_estatistico_{st.session_state.usuario}.pdf",
             mime="application/pdf"
         )
