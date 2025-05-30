@@ -242,7 +242,7 @@ def calculadora():
         buffer.seek(0)
 
         st.download_button(
-            label="📄 Baixar relatório em PDF",
+            label=" Baixar relatório em PDF",
             data=buffer,
             file_name="relatorio_estatistico.pdf",
             mime="application/pdf"
