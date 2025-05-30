@@ -45,7 +45,7 @@ def calculadora():
 
     cores = cores_por_tema(tema)
 
-    # Entrada do nome do usuário 
+    #  Entrada do nome do usuário 
     st.title("Calculadora Estatística Completa")
     usuario = st.text_input("Digite seu nome (usuário):")
 
@@ -76,7 +76,7 @@ def calculadora():
             st.session_state.valores = valores
             st.session_state.usuario = usuario
 
-    # Resultados 
+    #  Resultados 
     if st.session_state.mostrar_resultado:
         dados = np.array(st.session_state.valores)
         n = len(dados)
@@ -237,12 +237,15 @@ def calculadora():
             pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
             pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
 
+        # Função para salvar figuras no buffer e colocar no PDF
         def colocar_figura_no_pdf(fig, pdf, largura_cm=18):
             buf = io.BytesIO()
             fig.savefig(buf, format="PNG", dpi=150, bbox_inches='tight', transparent=True)
             buf.seek(0)
             largura_px = fig.bbox.bounds[2]
             altura_px = fig.bbox.bounds[3]
+            # Calcular altura proporcional em cm para largura fixa (18cm)
+            altura_cm = (altura_px / largura_px) * largura_cm
             pdf.image(buf, x=None, y=None, w=largura_cm, h=altura_cm)
             buf.close()
 
@@ -259,7 +262,7 @@ def calculadora():
         pdf.ln(5)
         colocar_figura_no_pdf(fig4, pdf)
 
-
+        # Salvar PDF em buffer e disponibilizar download
         pdf_buffer = io.BytesIO()
         pdf.output(pdf_buffer)
         pdf_bytes = pdf_buffer.getvalue()
