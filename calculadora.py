@@ -237,7 +237,6 @@ def calculadora():
             pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
             pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
 
-        # Função para salvar figuras no buffer e colocar no PDF
         def colocar_figura_no_pdf(fig, pdf, largura_cm=18):
             buf = io.BytesIO()
             fig.savefig(buf, format="PNG", dpi=150, bbox_inches='tight', transparent=True)
@@ -262,7 +261,7 @@ def calculadora():
         pdf.ln(5)
         colocar_figura_no_pdf(fig4, pdf)
 
-        # Salvar PDF em buffer e disponibilizar download
+
         pdf_buffer = io.BytesIO()
         pdf.output(pdf_buffer)
         pdf_bytes = pdf_buffer.getvalue()
