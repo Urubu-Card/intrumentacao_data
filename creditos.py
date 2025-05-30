@@ -6,7 +6,7 @@ def pagina_creditos():
     st.markdown("Desenvolvedores")
     st.markdown("""
     - Bianca de Oliveira Almeida - Programação da calculadora, desenvolvendo os cálculos e gráficos e programação da página de créditos.
-    - Eduardo -
+    - Eduardo da Silva Oliveira  - Progrmação da Pagina de Login e Cadastro, Otimização da pagina, Inegração ao banco de dados de forma Online, 
     """)
 
     st.markdown("Sobre os desenvolvedores")
