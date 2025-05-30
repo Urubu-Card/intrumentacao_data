@@ -45,7 +45,7 @@ def calculadora():
 
     cores = cores_por_tema(tema)
 
-    # ------------------- Entrada do nome do usuário -------------------
+    # Entrada do nome do usuário 
     st.title("Calculadora Estatística Completa")
     usuario = st.text_input("Digite seu nome (usuário):")
 
@@ -53,7 +53,7 @@ def calculadora():
     if "mostrar_resultado" not in st.session_state:
         st.session_state.mostrar_resultado = False
 
-    # ------------------- Interface inicial -------------------
+    #  Interface inicial 
     st.subheader("1. Escolha se as informações são para População ou Amostra:")
     esco = st.selectbox("Selecione:", ("População", "Amostra"))
 
@@ -76,7 +76,7 @@ def calculadora():
             st.session_state.valores = valores
             st.session_state.usuario = usuario
 
-    # ------------------- Resultados -------------------
+    # Resultados 
     if st.session_state.mostrar_resultado:
         dados = np.array(st.session_state.valores)
         n = len(dados)
@@ -119,7 +119,7 @@ def calculadora():
             st.markdown(f"- Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}")
             st.markdown(f"- Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]")
 
-        # ------------------- Criação dos gráficos -------------------
+        #  Criação dos gráficos 
 
         # Gráfico 1 - Histograma + Média
         fig1, ax1 = plt.subplots(facecolor=cores['fundo_fig'])
@@ -207,7 +207,7 @@ def calculadora():
         ax4.legend()
         st.pyplot(fig4)
 
-        # ------------------- GERAR RELATÓRIO PDF COMPLETO -------------------
+        #  GERAR RELATÓRIO PDF COMPLETO 
 
         pdf = FPDF()
         pdf.set_auto_page_break(auto=True, margin=15)
