@@ -65,7 +65,7 @@ def calculadora():
     for i in range(qtd):
         col = cols[i % 9]
         with col:
-            num = st.number_input(f"{i + 1}° Valor", key=f"valor_{i}", step=0.01)
+            num = st.number_input(f"{i + 1}° Valor", key=f"valor_{i}", step=0.01, format="%.4f")
             valores.append(num)
 
     if st.button("Confirmar e calcular"):
@@ -202,47 +202,55 @@ def calculadora():
 
         ax4.scatter(x_simulado, y_simulado, color=cores['cor_scatter'], label='Dados')
         ax4.plot(x_simulado, y_pred, color=cores['cor_regressao'], label='Regressão Linear')
-        ax4.set_title("Gráfico de Dispersão e Regressão Linear")
+        ax4.set_title("Dispersão dos Valores e Regressão Linear")
         ax4.set_xlabel("Índice")
         ax4.set_ylabel("Valor")
         ax4.legend()
         st.pyplot(fig4)
 
-        # ------------------- PDF para download -------------------
-        def criar_pdf():
+        # ------------------- PDF (botão para gerar) -------------------
+        if st.button("Gerar PDF com resultados e gráficos"):
             pdf = FPDF()
             pdf.add_page()
-            pdf.set_font("Arial", size=12)
-
-            pdf.cell(0, 10, f"Relatório Estatístico - Usuário: {st.session_state.usuario}", ln=True)
-            pdf.cell(0, 10, f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", ln=True)
-            pdf.ln(5)
-
-            pdf.cell(0, 10, "Dados inseridos:", ln=True)
-            dados_str = ', '.join([deixar_virgula(d) for d in dados])
-            pdf.multi_cell(0, 10, dados_str)
-            pdf.ln(5)
-
-            pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
-            if st.session_state.esco == "População":
-                pdf.cell(0, 10, f"Variância: {deixar_virgula(var_pop)}", ln=True)
-                pdf.cell(0, 10, f"Desvio Padrão: {deixar_virgula(desvio_pop)}", ln=True)
-            else:
-                pdf.cell(0, 10, f"Variância Amostral: {deixar_virgula(var_amostral)}", ln=True)
-                pdf.cell(0, 10, f"Desvio Padrão Amostral: {deixar_virgula(desvio_amostral)}", ln=True)
-                pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
-                pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
-                pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
-
+            pdf.set_font("Arial", 'B', 16)
+            pdf.cell(0, 10, "Relatório de Cálculos Estatísticos", 0, 1, 'C')
+            pdf.set_font("Arial", '', 12)
+            pdf.cell(0, 10, f"Usuário: {st.session_state.usuario}", 0, 1)
+            pdf.cell(0, 10, f"Data/Hora: {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}", 0, 1)
             pdf.ln(10)
-            pdf.cell(0, 10, "Fim do relatório.", ln=True)
+            pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", 0, 1)
+            if st.session_state.esco == "População":
+                pdf.cell(0, 10, f"Variância: {deixar_virgula(var_pop)}", 0, 1)
+                pdf.cell(0, 10, f"Desvio padrão: {deixar_virgula(desvio_pop)}", 0, 1)
+            else:
+                pdf.cell(0, 10, f"Variância: {deixar_virgula(var_amostral)}", 0, 1)
+                pdf.cell(0, 10, f"Desvio padrão: {deixar_virgula(desvio_amostral)}", 0, 1)
+                pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", 0, 1)
+                pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", 0, 1)
+                pdf.cell(0, 10, f"Intervalo 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", 0, 1)
 
-            return pdf.output(dest='S').encode('latin1')
+            # Salva os gráficos em imagens e insere no PDF
+            imagens = []
+            for fig in [fig1, fig2, fig3, fig4]:
+                buf = io.BytesIO()
+                fig.savefig(buf, format='PNG', bbox_inches='tight', transparent=True)
+                buf.seek(0)
+                imagens.append(buf)
 
-        pdf_bytes = criar_pdf()
-        st.download_button(
-            label="Baixar relatório PDF",
-            data=pdf_bytes,
-            file_name=f"relatorio_estatistico_{st.session_state.usuario}.pdf",
-            mime="application/pdf"
-        )
+            # Insere as imagens (4 gráficos em duas páginas)
+            for i, img in enumerate(imagens):
+                if i % 2 == 0 and i != 0:
+                    pdf.add_page()
+                x_pos = 10 if i % 2 == 0 else 110
+                y_pos = 60 if i % 2 == 0 else 60
+                pdf.image(img, x=x_pos, y=y_pos, w=90)
+                img.close()
+
+            # Download do PDF
+            pdf_output = pdf.output(dest='S').encode('latin1')
+            st.download_button(
+                label="Baixar PDF",
+                data=pdf_output,
+                file_name=f"Relatorio_Estatistico_{usuario}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf",
+                mime="application/pdf"
+            )
