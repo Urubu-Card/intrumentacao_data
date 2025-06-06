@@ -27,7 +27,7 @@ def pagina_creditos():
 
     st.markdown("Agradecimentos")
     st.markdown("""
-    Agradecemos a todos que contribuíram direta ou indiretamente para o desenvolvimento deste site, em especial, ao professor Fabiano Luizon Campos, no qual foi docente responsável por nos guiar nesse projeto, e ao Everton [...], por solicitar o projeto e nos guiar quanto ao conteúdo do mesmo.
+    Agradecemos a todos que contribuíram direta ou indiretamente para o desenvolvimento deste site, em especial, ao professor Fabiano Luizon Campos, no qual foi docente responsável por nos guiar nesse projeto, e ao Everton Jonny da Silva, por solicitar o projeto e nos guiar quanto ao conteúdo do mesmo.
     Este site foi feito e pensado para cumprir com a função de ajudar a produção de projetos e cálculos para a turma de Instrumentação do SENAI Jairo Cândido, cursando em 2025.
     Para dúvidas, sugestões ou contribuições, entre em contato com os desenvolvedores.  
     """)
