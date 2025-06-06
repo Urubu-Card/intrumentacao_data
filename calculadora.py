@@ -42,6 +42,7 @@ def calculadora():
                 'cor_intervalo': 'gold',
                 'cor_edge_hist': 'black'
             }
+            
     cores = cores_por_tema(tema)
 
     #  Entrada do nome do usuário 
@@ -103,20 +104,20 @@ def calculadora():
 
         st.markdown(f"**Usuário:** {st.session_state.usuario}")
         st.markdown(f"**Data/Hora:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
-        st.markdown(f"### Média: {deixar_virgula(media)}")
+        st.markdown(f"### Média: {deixar_ponto(media)}")
         st.divider()
 
         if esco == "População":
             st.markdown("### Cálculos como População:")
-            st.markdown(f"- Variância:  {deixar_virgula(var_pop)}")
-            st.markdown(f"- Desvio padrão: {deixar_virgula(desvio_pop)}")
+            st.markdown(f"- Variância:  {deixar_ponto(var_pop)}")
+            st.markdown(f"- Desvio padrão: {deixar_ponto(desvio_pop)}")
         else:
             st.markdown("### Cálculos como Amostra:")
-            st.markdown(f"- Variância: {deixar_virgula(var_amostral)}")
-            st.markdown(f"- Desvio padrão: {deixar_virgula(desvio_amostral)}")
-            st.markdown(f"- Incerteza padrão (u): {deixar_virgula(u_padrao)}")
-            st.markdown(f"- Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}")
-            st.markdown(f"- Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]")
+            st.markdown(f"- Variância: {deixar_ponto(var_amostral)}")
+            st.markdown(f"- Desvio padrão: {deixar_ponto(desvio_amostral)}")
+            st.markdown(f"- Incerteza padrão (u): {deixar_ponto(u_padrao)}")
+            st.markdown(f"- Incerteza expandida (U, k=2): {deixar_ponto(u_expandida)}")
+            st.markdown(f"- Intervalo de confiança 95%: [{deixar_ponto(intervalo[0])}, {deixar_ponto(intervalo[1])}]")
 
         #  Criação dos gráficos 
 
@@ -225,16 +226,16 @@ def calculadora():
 
         # Estatísticas textuais
         pdf.set_font("Arial", "", 12)
-        pdf.cell(0, 10, f"Média: {deixar_virgula(media)}", ln=True)
+        pdf.cell(0, 10, f"Média: {deixar_ponto(media)}", ln=True)
         if esco == "População":
-            pdf.cell(0, 10, f"Variância (População): {deixar_virgula(var_pop)}", ln=True)
-            pdf.cell(0, 10, f"Desvio padrão (População): {deixar_virgula(desvio_pop)}", ln=True)
+            pdf.cell(0, 10, f"Variância (População): {deixar_ponto(var_pop)}", ln=True)
+            pdf.cell(0, 10, f"Desvio padrão (População): {deixar_ponto(desvio_pop)}", ln=True)
         else:
-            pdf.cell(0, 10, f"Variância (Amostra): {deixar_virgula(var_amostral)}", ln=True)
-            pdf.cell(0, 10, f"Desvio padrão (Amostra): {deixar_virgula(desvio_amostral)}", ln=True)
-            pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_virgula(u_padrao)}", ln=True)
-            pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_virgula(u_expandida)}", ln=True)
-            pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_virgula(intervalo[0])}, {deixar_virgula(intervalo[1])}]", ln=True)
+            pdf.cell(0, 10, f"Variância (Amostra): {deixar_ponto(var_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Desvio padrão (Amostra): {deixar_ponto(desvio_amostral)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza padrão (u): {deixar_ponto(u_padrao)}", ln=True)
+            pdf.cell(0, 10, f"Incerteza expandida (U, k=2): {deixar_ponto(u_expandida)}", ln=True)
+            pdf.cell(0, 10, f"Intervalo de confiança 95%: [{deixar_ponto(intervalo[0])}, {deixar_ponto(intervalo[1])}]", ln=True)
 
         # Função para salvar figuras no buffer e colocar no PDF
         def colocar_figura_no_pdf(fig, pdf, largura_cm=18):
