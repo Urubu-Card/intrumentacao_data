@@ -11,7 +11,7 @@ def calculadora():
     tema = st.get_option('theme.base')
 
     def deixar_virgula(num):
-        return str(round(num, 4)).replace('.', ',')
+        return str(round(num, 4)).replace(',', '.')
 
     def cores_por_tema(tema):
         if tema == 'dark':
