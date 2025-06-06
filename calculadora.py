@@ -6,6 +6,7 @@ def calculadora():
     from fpdf import FPDF
     import io
     from datetime import datetime
+    import pytz
 
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
     tema = st.get_option('theme.base')
@@ -103,7 +104,9 @@ def calculadora():
         st.subheader("Resultados Estatísticos")
 
         st.markdown(f"**Usuário:** {st.session_state.usuario}")
-        st.markdown(f"**Data/Hora:** {datetime.now().strftime('%d/%m/%Y %H:%M:%S')}")
+        fuso_brasilia = pytz.timezone("America/Sao_Paulo")
+        agora = datetime.now(fuso_brasilia)
+        st.markdown(f"**Data/Hora:** {agora.strftime('%d/%m/%Y %H:%M:%S')}")
         st.markdown(f"### Média: {deixar_ponto(media)}")
         st.divider()
 
