@@ -42,7 +42,6 @@ def calculadora():
                 'cor_intervalo': 'gold',
                 'cor_edge_hist': 'black'
             }
-
     cores = cores_por_tema(tema)
 
     #  Entrada do nome do usuário 
