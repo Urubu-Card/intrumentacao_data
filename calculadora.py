@@ -10,7 +10,7 @@ def calculadora():
     # Detecta o tema atual do Streamlit ('light' ou 'dark')
     tema = st.get_option('theme.base')
 
-    def deixar_virgula(num):
+    def deixar_ponto(num):
         return str(round(num, 4)).replace(',', '.')
 
     def cores_por_tema(tema):
