@@ -1,49 +1,42 @@
+
 import streamlit as st
 import re
 import time
 import bcrypt
 import pandas as pd
-from sqlalchemy import create_engine, text
-import os 
+import firebase_admin
+from firebase_admin import credentials, firestore
 
+firebase_config = st.secrets["firebase"]
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+if not firebase_admin._apps:
+    cred = credentials.Certificate(firebase_config)
+    firebase_admin.initialize_app(cred)
 
-    
-
-@st.cache_resource
-def engine_pega():
-    if not DATABASE_URL:
-        st.error("Erro não conectado")
-        st.stop()
-    return create_engine(DATABASE_URL)
-
-def conCursor():
-    return engine_pega()
-
+db = firestore.client()
 def validar_email(email):
     padrao = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return re.match(padrao, email) is not None
 
 def adicionar_no_DB(nome, email, senha, admin=False):
-    senha_bytes = senha.encode('utf-8')
-    senha_hash = bcrypt.hashpw(senha_bytes, bcrypt.gensalt())
+    senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    contador_ref = db.collection("controle").document("contador_usuarios")
+    doc = contador_ref.get()
+    ultimo_id = doc.to_dict().get("ultimo_id", 0) if doc.exists else 0
+    novo_id = ultimo_id + 1
 
-    engine = conCursor()
-    adicionar = "INSERT INTO usuarios (nome, email, senha, admin) VALUES (%s, %s, %s, %s)"
+    db.collection("usuarios").document(str(novo_id)).set({
+        "nome": nome,
+        "email": email,
+        "senha": senha_hash,
+        "admin": admin
+    })
 
-    conn = engine.raw_connection()
-    cursor = conn.cursor()
-    cursor.execute(adicionar, (nome, email, senha_hash.decode('utf-8'), admin))
-    conn.commit()
-    cursor.close()
-    conn.close()
-
+    contador_ref.set({ "ultimo_id": novo_id })
     st.success("✅ Usuário adicionado com sucesso!")
 
 def stpesq():
     st.subheader("Cadastro de novo usuário:")
-
     nome = st.text_input("Nome do usuário:")
     email = st.text_input("E-mail do usuário:")
     senha = st.text_input("Senha:", type="password")
@@ -58,51 +51,46 @@ def stpesq():
             adicionar_no_DB(nome, email, senha, admin)
 
 def stdeletar():
-    engine = conCursor()
-
     st.subheader("Qual é o ID do usuário que deseja deletar? ")
     delid = st.number_input("ID do usuário:", min_value=1, step=1, label_visibility="collapsed")
 
-    if 'deletar_confirmado' not in st.session_state:
-        st.session_state.deletar_confirmado = False
+    if "confirmar_delete" not in st.session_state:
+        st.session_state.confirmar_delete = False
+        st.session_state.id_para_deletar = None
 
-    if delid and st.button("Deletar usuário"):
-        buscar = "SELECT * FROM usuarios WHERE id = %s"
-        resubusca = pd.read_sql(buscar, engine, params=(delid,))
+    if st.button("Deletar usuário"):
+        st.session_state.confirmar_delete = True
+        st.session_state.id_para_deletar = delid
+        st.info(f"Certeza que deseja deletar o usuário com o ID: {delid} (Ação irreversível).")
 
-        if not resubusca.empty:
-            st.warning("Tem certeza que deseja deletar esse usuário? Não será possível recuperá-lo depois.")
-            st.session_state.delid_pendente = delid
-            st.session_state.confirmacao_pendente = True
-
-    if st.session_state.get("confirmacao_pendente", False):
+    if st.session_state.confirmar_delete:
         if st.button("Sim, eu tenho certeza."):
-            try:
-                with engine.begin() as conn:
-                    conn.execute(
-                        text("DELETE FROM usuarios WHERE id = :id"),
-                        {"id": st.session_state.delid_pendente}
-                    )
+            doc_ref = db.collection("usuarios").document(str(st.session_state.id_para_deletar))
+            if doc_ref.get().exists:
+                doc_ref.delete()
                 st.success("✅ Usuário deletado com sucesso!")
-            except Exception as e:
-                st.error(f"Erro ao deletar: {e}")
+            else:
+                st.warning("Usuário não encontrado.")
 
-            st.session_state.confirmacao_pendente = False
-            st.session_state.delid_pendente = None
-
+            # Resetar confirmação após deletar
+            st.session_state.confirmar_delete = False
+            st.session_state.id_para_deletar = None
 
 @st.cache_data(ttl=10)
 def stlistar():
-    engine = conCursor()
-
     st.subheader("Lista de Usuários :")
-    lista = "SELECT * FROM usuarios"
-    listagem = pd.read_sql(lista, engine)
+    docs = db.collection("usuarios").stream()
+    dados = []
+    for doc in docs:
+        user = doc.to_dict()
+        user["id"] = doc.id
+        dados.append(user)
 
-    if not listagem.empty:
-        st.dataframe(listagem)
+    if dados:
+        df = pd.DataFrame(dados)
+        st.dataframe(df)
     else:
-        st.error("Nenhum usuário cadastrado.")
+        st.warning("Nenhum usuário cadastrado.")
 
 def stpri():
     st.subheader("Menu do Admin:")
@@ -114,5 +102,3 @@ def stpri():
         stlistar()
     elif escolha == "Deletar um usuário":
         stdeletar()
-
-
