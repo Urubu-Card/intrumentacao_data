@@ -18,10 +18,12 @@ db = firestore.client()
 
 
 
-
+# --------> SENHA HASH PARA PRIVACIDADE DO USUARIO <--------
 def gerar_hash(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
+
+# --------> REGISTRA A ATIVIDADE DE CADA USUARIO AO ENTRAR PARA OS ADMINISTRADORES SABEREM <--------
 def registrar_atividade(email):
     agora = datetime.now().isoformat()
     ref = db.collection("sessoes_ativas").document(email)
@@ -31,6 +33,8 @@ def registrar_atividade(email):
     else:
         ref.set({ "email": email, "ultima_atividade": agora })
 
+
+# --------> DEFINE O CSS DO TITULODE LOGIN E DOS BOTOES PARA FICAREM CENTRALIZADOS <--------
 def css():
     st.markdown("""
         <style>
@@ -58,13 +62,19 @@ def css():
         </style>
     """, unsafe_allow_html=True)
 
+
+# --------> EXIBIÇÂO DO TITULO <--------
 def titulo():
     st.markdown('<div class="login-title">Login :</div>', unsafe_allow_html=True)
 
+
+# --------> VALIDA O EMAIL DO USUARUIO PARA TER UM @ E .  <--------
 def validar_email(email):
     padrao = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return re.match(padrao, email) is not None
 
+
+# --------> VERIFICA NO BANCO DE DADOS SE O USUARIO EXISTE  <--------
 def verificar_no_db(email, senha):
     usuarios_ref = db.collection("usuarios").where("email", "==", email).stream()
     user = None
@@ -87,6 +97,9 @@ def verificar_no_db(email, senha):
     else:
         st.error("Usuário não cadastrado.")
 
+
+
+# --------> INTERFACE PARA O USUARIO COLCOAR SEU EMAILE  SUA SENHA  <--------
 def login1():
     email = st.text_input("E-Mail : ")
     senha = st.text_input("Senha : ", type="password")
@@ -99,6 +112,8 @@ def login1():
             verificar_no_db(email, senha)
     return email    
 
+
+# --------> CONTA OS USUARIOS QUE ENTRAM  <--------
 def contar_usuarios_online():
     docs = db.collection("sessoes_ativas").stream()
     return sum(1 for _ in docs)
