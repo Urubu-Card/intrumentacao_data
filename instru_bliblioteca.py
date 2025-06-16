@@ -1,52 +1,37 @@
+
 import streamlit as st
 import re
 import time
-from sqlalchemy import create_engine
-import pandas as pd
 import hashlib
 import bcrypt  
 from datetime import datetime
-import os
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+firebase_config = st.secrets["firebase"]
+
+if not firebase_admin._apps:
+    cred = credentials.Certificate(firebase_config)
+    firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+
 
 
 
 def gerar_hash(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
 
-DATABASE_URL = os.getenv("DATABASE_URL")
-
-
-
-@st.cache_resource
-def pega_db():
-    if not DATABASE_URL:
-        st.error("Erro não conectado")
-        st.stop()
-    return create_engine(DATABASE_URL)
-
-
-def conCursor():
-    return pega_db()
-
-
-
 def registrar_atividade(email):
-    engine = conCursor()
-    agora = datetime.now()
-    conn = engine.raw_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM sessoes_ativas WHERE email = %s", (email,))
-    result = cursor.fetchone()
-    if result:
-        cursor.execute("UPDATE sessoes_ativas SET ultima_atividade = %s WHERE email = %s", (agora, email))
+    agora = datetime.now().isoformat()
+    ref = db.collection("sessoes_ativas").document(email)
+    doc = ref.get()
+    if doc.exists:
+        ref.update({ "ultima_atividade": agora })
     else:
-        cursor.execute("INSERT INTO sessoes_ativas (email, ultima_atividade) VALUES (%s, %s)", (email, agora))
-    conn.commit()
-    cursor.close()
-    conn.close()
+        ref.set({ "email": email, "ultima_atividade": agora })
 
 def css():
-    is_dark = st.get_option("theme.base") == "dark"
     st.markdown("""
         <style>
         .login-title {
@@ -81,34 +66,26 @@ def validar_email(email):
     return re.match(padrao, email) is not None
 
 def verificar_no_db(email, senha):
-    engine = conCursor()
-    conn = engine.raw_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT nome, senha, admin FROM usuarios WHERE email = %s", (email,))
-        result = cursor.fetchone()
-    except Exception as e:
-        st.error(f"Erro ao consultar o banco de dados: {e}")
-        cursor.close()
-        conn.close()
-        return
-    if result:
-        nome, senha_hash, admin = result
-        if bcrypt.checkpw(senha.encode('utf-8'), senha_hash.encode('utf-8')):
+    usuarios_ref = db.collection("usuarios").where("email", "==", email).stream()
+    user = None
+    for doc in usuarios_ref:
+        user = doc.to_dict()
+        break
+
+    if user:
+        if bcrypt.checkpw(senha.encode('utf-8'), user['senha'].encode('utf-8')):
             with st.spinner("Login Bem-Sucedido! Redirecionando..."):
                 time.sleep(3)
                 registrar_atividade(email)
                 st.session_state["logado"] = True
-                st.session_state["admin"] = admin
-                st.session_state["nome"] = nome
+                st.session_state["admin"] = user["admin"]
+                st.session_state["nome"] = user["nome"]
                 st.session_state["email"] = email
                 st.switch_page("pages/main.py")
         else:
             st.error("Senha incorreta.")
     else:
         st.error("Usuário não cadastrado.")
-    cursor.close()
-    conn.close()
 
 def login1():
     email = st.text_input("E-Mail : ")
@@ -123,13 +100,5 @@ def login1():
     return email    
 
 def contar_usuarios_online():
-    engine = conCursor()
-    conn = engine.raw_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT COUNT(*) FROM sessoes_ativas")
-    resultado = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return resultado[0] if resultado else 0
-
-
+    docs = db.collection("sessoes_ativas").stream()
+    return sum(1 for _ in docs)
