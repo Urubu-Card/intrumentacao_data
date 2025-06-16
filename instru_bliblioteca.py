@@ -10,10 +10,12 @@ from firebase_admin import credentials, firestore
 
 firebase_config = st.secrets["firebase"]
 
+
+firebase_config["private_key"] = firebase_config["private_key"].replace("\\n", "\n")
+
 if not firebase_admin._apps:
     cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
-
 db = firestore.client()
 
 
