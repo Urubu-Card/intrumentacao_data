@@ -1,11 +1,10 @@
 streamlit
-sqlalchemy
 pandas
 bcrypt
 datetime
 numpy
-pymysql
 matplotlib
 scipy
 fpdf2
 pytz
+firebase_admin
