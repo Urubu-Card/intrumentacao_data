@@ -8,9 +8,7 @@ from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-firebase_config = st.secrets["firebase"]
-
-
+firebase_config = st.secrets["firebase"].copy()
 firebase_config["private_key"] = firebase_config["private_key"].replace("\\n", "\n")
 
 if not firebase_admin._apps:
