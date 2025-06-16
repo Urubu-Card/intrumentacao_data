@@ -3,7 +3,7 @@
 </h1>
 
 <h2 align="center">
-    Instrumentação Projeto  : Data Science
+    Instrumentação Projeto  :
 </h2>
 
 <h3 align="center">
